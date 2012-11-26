@@ -4,6 +4,7 @@
  */
 package AutoComplete;
 
+import DemoSpellchecker.LuceneSpellSearcher;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URLDecoder;
@@ -35,7 +36,7 @@ public class result extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, CorruptIndexException, ParseException {
+            throws ServletException, IOException, CorruptIndexException, ParseException, Exception {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
         String queryText = null;
@@ -54,9 +55,13 @@ public class result extends HttpServlet {
              ArrayList<AutocompleteDTO> List = luceneSearcher.search(queryText);
              List = Sort(List);
              */
-            SearchInstance SearchInstance = new SearchInstance();
+            //SearchInstance SearchInstance = new SearchInstance();
             ArrayList<AutocompleteDTO> List = new ArrayList<AutocompleteDTO>();
-            List.addAll(SearchInstance.Search(queryText));
+            //List.addAll(SearchInstance.Search(queryText));
+            
+            LuceneSpellSearcher Searcher = new LuceneSpellSearcher();
+            List.addAll(Searcher.suggest(queryText));
+            List = Sort(List);
             String jesonArry = getJsonArryForAutocmplt(List);
             String result = "{\"suggestions\":[" + jesonArry + "]}";
             out.println(result);
@@ -72,7 +77,9 @@ public class result extends HttpServlet {
             suggestions = " ";
         }
         for (int i = 0; i < List.size(); i++) {
-            suggestions += "{\"name\":\"" + List.get(i).getScore() + "@" + List.get(i).getObjectName() + "\",\"icon\":\"" + List.get(i).getType() + ".jpg\" },";
+            System.out.println(List.get(i).getObjectName());
+            suggestions += "{\"name\":\""  + List.get(i).getObjectName() + "\",\"icon\":\"" + List.get(i).getType() + ".jpg\" },";
+            //suggestions += "{\"name\":\"" + List.get(i).getScore() + " " + List.get(i).getObjectName() + "\",\"icon\":\"" + List.get(i).getType() + ".jpg\" },";
             //suggestions += "{\"icon\":\"" + ListString[0] + "\"},";
         }
         suggestions = suggestions.substring(0, suggestions.length() - 1);
@@ -83,7 +90,7 @@ public class result extends HttpServlet {
         AutocompleteDTO temp = new AutocompleteDTO();
         for (int i = 0; i < List.size(); i++) {
             for (int j = i + 1; j < List.size(); j++) {
-                if (List.get(i).getScore() < List.get(j).getScore()) {
+                if (List.get(i).getScore() > List.get(j).getScore()) {
                     temp = new AutocompleteDTO();
                     temp = List.get(i);
                     List.set(i, List.get(j));
@@ -108,11 +115,14 @@ public class result extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, CorruptIndexException {
-        try {
+        try {        
             processRequest(request, response);
         } catch (ParseException ex) {
             Logger.getLogger(result.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(result.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
     }
 
     /**
@@ -131,7 +141,10 @@ public class result extends HttpServlet {
             processRequest(request, response);
         } catch (ParseException ex) {
             Logger.getLogger(result.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(result.class.getName()).log(Level.SEVERE, null, ex);
         }
+          
     }
 
     /**

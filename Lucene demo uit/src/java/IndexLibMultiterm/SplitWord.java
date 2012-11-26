@@ -15,7 +15,7 @@ public class SplitWord {
     static String delims = "[ .,?!()-]+";
     static String[] st = null;
     public static void main(String[] args) throws IOException {
-        String word="INFOCOM - IEEE INFOCOM";
+        String word="Information Flow - IF";
         st = word.split(delims);
         for(String Temp:st)
         {
